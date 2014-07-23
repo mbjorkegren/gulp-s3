@@ -7,15 +7,17 @@ var gutil = require('gulp-util');
 
 module.exports = function (aws, options) {
   if (!options.delay) { options.delay = 0; }
-
   var client = knox.createClient(aws);
   var waitTime = 0;
+  var makeUploadPath = options.makeUploadPath ? options.makeUploadPath : function(file) {
+      return file.path.replace(file.base, '');
+  };
 
   return es.mapSync(function (file, cb) {
       var isFile = fs.lstatSync(file.path).isFile();
       if (!isFile) { return false; }
 
-      var uploadPath = file.path.replace(file.base, '');
+      var uploadPath = makeUploadPath(file);
       var headers = { 'x-amz-acl': 'public-read' };
       if (options.headers) {
           for (var key in options.headers) {
